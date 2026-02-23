@@ -1,0 +1,9 @@
+{
+  "config": {
+    "error": {
+      "cannot_connect": "Failed to connect.",
+      "invalid_host": "Please enter a valid IP address or hostname (without http://).",
+      "unknown": "Unexpected error."
+    }
+  }
+}

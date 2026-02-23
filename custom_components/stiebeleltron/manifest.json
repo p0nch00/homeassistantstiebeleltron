@@ -1,0 +1,11 @@
+{
+  "domain": "stiebel_eltron",
+  "name": "STIEBEL ELTRON",
+  "codeowners": ["@p0nch00", "@ThyMYthOS"],
+  "config_flow": true,
+  "documentation": "https://google.com",
+  "iot_class": "local_polling",
+  "loggers": ["pymodbus", "pystiebeleltron"],
+  "requirements": ["pystiebeleltron==0.2.5"],
+  "version": 0.1
+}

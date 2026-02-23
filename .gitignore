@@ -1,0 +1,10 @@
+/home-assistant*
+/scenes.yaml
+/scripts.yaml
+/secrets.yaml
+/automations.yaml
+/configuration.yaml
+/.HA_VERSION
+/.storage
+/.cloud
+/blueprints

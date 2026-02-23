@@ -1,0 +1,6 @@
+{
+  "name": "Stiebel-Eltron (experimental)",
+  "country": "DE",
+  "domains": ["button", "number", "select", "sensor"],
+  "homeassistant": "2025.12.3"
+}
