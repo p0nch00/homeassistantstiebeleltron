@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from pystiebeleltron import RegisterType
-from pystiebeleltron.wpm import WpmStiebelEltronAPI
+from .pystiebeleltron import RegisterType
+from .pystiebeleltron.wpm import WpmStiebelEltronAPI
 
 from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
@@ -81,7 +81,7 @@ class SteRegisterNumber(CoordinatorEntity, NumberEntity):
             return None
 
     async def async_set_native_value(self, value: float) -> None:
-        res = self._ctx.api.set_register_value(self._reg_key, value)
+        res = self._ctx.api.write_register_value(self._reg_key, value)
         if hasattr(res, "__await__"):
             await res
         await self._ctx.coordinator.async_request_refresh()

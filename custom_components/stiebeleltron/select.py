@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from pystiebeleltron import RegisterType
-from pystiebeleltron.wpm import WpmStiebelEltronAPI, WpmSystemParametersRegisters
+from .pystiebeleltron import RegisterType
+from .pystiebeleltron.wpm import WpmStiebelEltronAPI, WpmSystemParametersRegisters
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
@@ -138,7 +138,7 @@ class SteRegisterSelect(CoordinatorEntity, SelectEntity):
         else:
             value = int(option)
 
-        res = self._ctx.api.set_register_value(self._reg_key, value)
+        res = self._ctx.api.write_register_value(self._reg_key, value)
         if hasattr(res, "__await__"):
             await res
 

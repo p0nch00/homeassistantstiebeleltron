@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from pystiebeleltron import RegisterType
-from pystiebeleltron.wpm import WpmStiebelEltronAPI
+from .pystiebeleltron import RegisterType
+from .pystiebeleltron.wpm import WpmStiebelEltronAPI
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -58,7 +58,7 @@ class SteRegisterSensor(CoordinatorEntity, SensorEntity):
         self._attr_device_info = ste_device_info(ctx)
         from .entity_base import extract_hp_number
 
-        hp = extract_hp_number(reg.name)
+        hp = extract_hp_number(reg_key)
         if hp:
             self._attr_name = f"{ctx.title} {block_name} HP{hp} {reg.name}"
         else:

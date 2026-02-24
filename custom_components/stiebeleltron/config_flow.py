@@ -8,7 +8,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 import voluptuous as vol
-from pystiebeleltron.wpm import WpmStiebelEltronAPI
+from .pystiebeleltron.wpm import WpmStiebelEltronAPI
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from pystiebeleltron import RegisterType
-from pystiebeleltron.wpm import WpmStiebelEltronAPI
+from .pystiebeleltron import RegisterType
+from .pystiebeleltron.wpm import WpmStiebelEltronAPI
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
@@ -64,13 +64,13 @@ class SteRegisterSwitch(CoordinatorEntity, SwitchEntity):
         return v == 1
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        res = self._ctx.api.set_register_value(self._reg_key, 1)
+        res = self._ctx.api.write_register_value(self._reg_key, 1)
         if hasattr(res, "__await__"):
             await res
         await self._ctx.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
-        res = self._ctx.api.set_register_value(self._reg_key, 0)
+        res = self._ctx.api.write_register_value(self._reg_key, 0)
         if hasattr(res, "__await__"):
             await res
         await self._ctx.coordinator.async_request_refresh()
