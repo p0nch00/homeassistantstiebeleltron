@@ -24,16 +24,13 @@ def _normalize_host(raw: str) -> str:
     """Normalize user input into a hostname/IP (strip http(s)://, paths, etc.)."""
     raw = (raw or "").strip()
 
-    # If user entered a URL, extract hostname
     if "://" in raw:
         parsed = urlparse(raw)
         if parsed.hostname:
             return parsed.hostname
 
-    # Common case: someone typed http:// in front
     raw = raw.removeprefix("http://").removeprefix("https://")
 
-    # Strip any accidental path/port fragments (best-effort)
     raw = raw.split("/")[0].strip()
 
     return raw
@@ -43,15 +40,12 @@ def _is_valid_host(host: str) -> bool:
     """Basic validation: accept IPs and hostnames."""
     if not host:
         return False
-    # If it's an IP, validate strictly
     try:
         ipaddress.ip_address(host)
         return True
     except ValueError:
         pass
 
-    # Otherwise accept a basic hostname (very light validation)
-    # Home Assistant often allows mDNS names etc.
     return all(part and " " not in part for part in host.split("."))
 
 
@@ -80,7 +74,7 @@ class StiebelEltronConfigFlow(ConfigFlow, domain=DOMAIN):
         finally:
             try:
                 await api.close()
-            except Exception:  # best effort cleanup
+            except Exception:
                 pass
 
     async def async_step_user(
@@ -142,7 +136,6 @@ class StiebelEltronConfigFlow(ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("Unexpected exception during import")
             return self.async_abort(reason="unknown")
 
-        # Use provided name if present, else a default
         title = user_input.get(CONF_NAME) or "Stiebel Eltron"
 
         return self.async_create_entry(

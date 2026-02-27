@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Any
 
 from .pystiebeleltron import RegisterType
-from .pystiebeleltron.wpm import WpmStiebelEltronAPI
+from .pystiebeleltron.wpm import WpmStiebelEltronAPI, WpmSystemParametersRegisters
+
 
 from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
@@ -20,6 +21,10 @@ def _step_for(reg) -> float:
         return 0.1
     return 1.0
 
+
+DENY_NUMBER = {
+    WpmSystemParametersRegisters.RESET,
+}
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -48,7 +53,15 @@ async def async_setup_entry(
                 continue
             # boolean-like -> handled by switch.py
             if reg.min == 0 and reg.max == 1:
+                if reg.unit != "°C":
+                    continue
+                reg.min = -100
+                reg.max = 100
+
+            if key in DENY_NUMBER:
                 continue
+
+
             entities.append(SteRegisterNumber(ctx, block.name, key, reg))
 
     async_add_entities(entities, True)

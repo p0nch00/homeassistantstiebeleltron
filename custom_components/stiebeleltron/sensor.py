@@ -40,7 +40,7 @@ async def async_setup_entry(
         # Holding registers *without* bounds will be exposed read-only here
         if block.register_type == RegisterType.HOLDING_REGISTER:
             for key, reg in block.registers.items():
-                if reg.min is None or reg.max is None:
+                if reg.min == 0 and reg.max == 1:
                     entities.append(SteRegisterSensor(ctx, block.name, "hold_ro", key, reg))
 
     async_add_entities(entities, True)

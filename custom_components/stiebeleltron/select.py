@@ -14,7 +14,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .entity_base import SteContext, ste_device_info
 
 
-# Optional: nice labels for known enum registers
 REGISTER_VALUE_LABELS: dict[Any, dict[int, str]] = {
     # WpmSystemParametersRegisters.OPERATING_MODE: 0..5
     WpmSystemParametersRegisters.OPERATING_MODE: {
@@ -24,11 +23,9 @@ REGISTER_VALUE_LABELS: dict[Any, dict[int, str]] = {
         3: "Day mode",
         4: "Setback mode",
         5: "DHW",
-        # Depending on model, there may be more; unknowns will fall back to numbers
     },
 }
 
-# Registers we do NOT want exposed as Select
 DENY_SELECT = {
     WpmSystemParametersRegisters.RESET,
     WpmSystemParametersRegisters.RESTART_ISG,
@@ -59,7 +56,7 @@ async def async_setup_entry(
 
     entities: list[SteRegisterSelect] = []
 
-    for block in api._register_blocks:  # internal but stable in pystiebeleltron==0.2.5
+    for block in api._register_blocks:
         if block.register_type != RegisterType.HOLDING_REGISTER:
             continue
 
@@ -68,9 +65,6 @@ async def async_setup_entry(
             if key in DENY_SELECT:
                 continue
 
-            # We treat "enum-ish" registers as Select:
-            # - data_type 8 in your generated file (OPERATING_MODE etc)
-            # - must have min/max
             if getattr(reg, "data_type", None) != 8:
                 continue
             if reg.min is None or reg.max is None:
@@ -133,7 +127,6 @@ class SteRegisterSelect(CoordinatorEntity, SelectEntity):
         if self._reverse:
             value = self._reverse.get(option)
             if value is None:
-                # If user picked an unknown numeric fallback label, try parsing
                 value = int(option)
         else:
             value = int(option)
@@ -141,5 +134,4 @@ class SteRegisterSelect(CoordinatorEntity, SelectEntity):
         res = self._ctx.api.write_register_value(self._reg_key, value)
         if hasattr(res, "__await__"):
             await res
-
         await self._ctx.coordinator.async_request_refresh()
