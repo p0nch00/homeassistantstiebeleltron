@@ -597,65 +597,65 @@ WPM_HEATPUMP_1_REGISTERS = {
 WPM_SYSTEM_PARAMETERS_REGISTERS = {
     WpmSystemParametersRegisters.OPERATING_MODE: ModbusRegister(address=1501, name="OPERATING MODE", unit="", min=0.0, max=5.0, data_type=8, key=WpmSystemParametersRegisters.OPERATING_MODE),
     WpmSystemParametersRegisters.COMFORT_TEMPERATURE_HK_1: ModbusRegister(
-        address=1502, name="COMFORT TEMPERATURE", unit="°C", min=5.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.COMFORT_TEMPERATURE_HK_1
+        address=1502, name="COMFORT TEMPERATURE HK1", unit="°C", min=5.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.COMFORT_TEMPERATURE_HK_1
     ),
     WpmSystemParametersRegisters.ECO_TEMPERATURE_HK_1: ModbusRegister(
-        address=1503, name="ECO TEMPERATURE", unit="°C", min=5.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.ECO_TEMPERATURE_HK_1
+        address=1503, name="ECO TEMPERATURE HK1", unit="°C", min=5.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.ECO_TEMPERATURE_HK_1
     ),
     WpmSystemParametersRegisters.HEATING_CURVE_RISE_HK_1: ModbusRegister(
-        address=1504, name="HEATING CURVE RISE", unit="", min=0.0, max=3.0, data_type=7, key=WpmSystemParametersRegisters.HEATING_CURVE_RISE_HK_1
+        address=1504, name="HEATING CURVE RISE HK1", unit="", min=0.0, max=3.0, data_type=7, key=WpmSystemParametersRegisters.HEATING_CURVE_RISE_HK_1
     ),
     WpmSystemParametersRegisters.COMFORT_TEMPERATURE_HK_2: ModbusRegister(
-        address=1505, name="COMFORT TEMPERATURE", unit="°C", min=5.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.COMFORT_TEMPERATURE_HK_2
+        address=1505, name="COMFORT TEMPERATURE HK2", unit="°C", min=5.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.COMFORT_TEMPERATURE_HK_2
     ),
     WpmSystemParametersRegisters.ECO_TEMPERATURE_HK_2: ModbusRegister(
-        address=1506, name="ECO TEMPERATURE", unit="°C", min=5.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.ECO_TEMPERATURE_HK_2
+        address=1506, name="ECO TEMPERATURE HK2", unit="°C", min=5.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.ECO_TEMPERATURE_HK_2
     ),
     WpmSystemParametersRegisters.HEATING_CURVE_RISE_HK_2: ModbusRegister(
-        address=1507, name="HEATING CURVE RISE", unit="", min=0.0, max=3.0, data_type=7, key=WpmSystemParametersRegisters.HEATING_CURVE_RISE_HK_2
+        address=1507, name="HEATING CURVE RISE HK2", unit="", min=0.0, max=3.0, data_type=7, key=WpmSystemParametersRegisters.HEATING_CURVE_RISE_HK_2
     ),
     WpmSystemParametersRegisters.FIXED_VALUE_OPERATION: ModbusRegister(
-        address=1508, name="FIXED VALUE OPERATION", unit="°C", min=20.0, max=70.0, data_type=2, key=WpmSystemParametersRegisters.FIXED_VALUE_OPERATION
+        address=1508, name="FIXED VALUE OPERATION HK2", unit="°C", min=20.0, max=70.0, data_type=2, key=WpmSystemParametersRegisters.FIXED_VALUE_OPERATION
     ),
     WpmSystemParametersRegisters.DUAL_MODE_TEMP_HZG: ModbusRegister(
         address=1509, name="DUAL MODE TEMP HZG", unit="°C", min=-40.0, max=40.0, data_type=2, key=WpmSystemParametersRegisters.DUAL_MODE_TEMP_HZG
     ),
     WpmSystemParametersRegisters.COMFORT_TEMPERATURE: ModbusRegister(
-        address=1510, name="COMFORT TEMPERATURE", unit="°C", min=10.0, max=60.0, data_type=2, key=WpmSystemParametersRegisters.COMFORT_TEMPERATURE
+        address=1510, name="COMFORT TEMPERATURE WW", unit="°C", min=10.0, max=60.0, data_type=2, key=WpmSystemParametersRegisters.COMFORT_TEMPERATURE
     ),
-    WpmSystemParametersRegisters.ECO_TEMPERATURE: ModbusRegister(address=1511, name="ECO TEMPERATURE", unit="°C", min=10.0, max=60.0, data_type=2, key=WpmSystemParametersRegisters.ECO_TEMPERATURE),
-    WpmSystemParametersRegisters.DHW_STAGES: ModbusRegister(address=1512, name="DHW STAGES", unit="", min=0.0, max=6.0, data_type=8, key=WpmSystemParametersRegisters.DHW_STAGES),
+    WpmSystemParametersRegisters.ECO_TEMPERATURE: ModbusRegister(address=1511, name="ECO TEMPERATURE WW", unit="°C", min=10.0, max=60.0, data_type=2, key=WpmSystemParametersRegisters.ECO_TEMPERATURE),
+    WpmSystemParametersRegisters.DHW_STAGES: ModbusRegister(address=1512, name="DHW STAGES WW", unit="", min=0.0, max=6.0, data_type=8, key=WpmSystemParametersRegisters.DHW_STAGES),
     WpmSystemParametersRegisters.DUAL_MODE_TEMP_WW: ModbusRegister(
         address=1513, name="DUAL MODE TEMP WW", unit="°C", min=-40.0, max=40.0, data_type=2, key=WpmSystemParametersRegisters.DUAL_MODE_TEMP_WW
     ),
     WpmSystemParametersRegisters.SET_FLOW_TEMPERATURE_AREA: ModbusRegister(
-        address=1514, name="SET FLOW TEMPERATURE", unit="°C", min=7.0, max=25.0, data_type=2, key=WpmSystemParametersRegisters.SET_FLOW_TEMPERATURE_AREA
+        address=1514, name="SET FLOW TEMPERATURE FK", unit="°C", min=7.0, max=25.0, data_type=2, key=WpmSystemParametersRegisters.SET_FLOW_TEMPERATURE_AREA
     ),
     WpmSystemParametersRegisters.FLOW_TEMP_HYSTERESIS_AREA: ModbusRegister(
-        address=1515, name="FLOW TEMP HYSTERESIS", unit="K", min=1.0, max=5.0, data_type=2, key=WpmSystemParametersRegisters.FLOW_TEMP_HYSTERESIS_AREA
+        address=1515, name="FLOW TEMP HYSTERESIS Cooling", unit="K", min=1.0, max=5.0, data_type=2, key=WpmSystemParametersRegisters.FLOW_TEMP_HYSTERESIS_AREA
     ),
     WpmSystemParametersRegisters.SET_ROOM_TEMPERATURE_AREA: ModbusRegister(
-        address=1516, name="SET ROOM TEMPERATURE", unit="°C", min=20.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.SET_ROOM_TEMPERATURE_AREA
+        address=1516, name="SET ROOM TEMPERATURE FK", unit="°C", min=20.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.SET_ROOM_TEMPERATURE_AREA
     ),
     WpmSystemParametersRegisters.SET_FLOW_TEMPERATURE_FAN: ModbusRegister(
-        address=1517, name="SET FLOW TEMPERATURE", unit="°C", min=7.0, max=25.0, data_type=2, key=WpmSystemParametersRegisters.SET_FLOW_TEMPERATURE_FAN
+        address=1517, name="SET FLOW TEMPERATURE GK", unit="°C", min=7.0, max=25.0, data_type=2, key=WpmSystemParametersRegisters.SET_FLOW_TEMPERATURE_FAN
     ),
     WpmSystemParametersRegisters.FLOW_TEMP_HYSTERESIS_FAN: ModbusRegister(
-        address=1518, name="FLOW TEMP HYSTERESIS", unit="K", min=1.0, max=5.0, data_type=2, key=WpmSystemParametersRegisters.FLOW_TEMP_HYSTERESIS_FAN
+        address=1518, name="FLOW TEMP HYSTERESIS GK", unit="K", min=1.0, max=5.0, data_type=2, key=WpmSystemParametersRegisters.FLOW_TEMP_HYSTERESIS_FAN
     ),
     WpmSystemParametersRegisters.SET_ROOM_TEMPERATURE_FAN: ModbusRegister(
-        address=1519, name="SET ROOM TEMPERATURE", unit="°C", min=20.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.SET_ROOM_TEMPERATURE_FAN
+        address=1519, name="SET ROOM TEMPERATURE GK", unit="°C", min=20.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.SET_ROOM_TEMPERATURE_FAN
     ),
     WpmSystemParametersRegisters.RESET: ModbusRegister(address=1520, name="RESET", unit="", min=1.0, max=3.0, data_type=6, key=WpmSystemParametersRegisters.RESET),
     WpmSystemParametersRegisters.RESTART_ISG: ModbusRegister(address=1521, name="RESTART ISG", unit="", min=0.0, max=2.0, data_type=6, key=WpmSystemParametersRegisters.RESTART_ISG),
     WpmSystemParametersRegisters.COMFORT_TEMPERATURE_HK_3: ModbusRegister(
-        address=1550, name="COMFORT TEMPERATURE", unit="°C", min=5.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.COMFORT_TEMPERATURE_HK_3
+        address=1550, name="COMFORT TEMPERATURE HK3", unit="°C", min=5.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.COMFORT_TEMPERATURE_HK_3
     ),
     WpmSystemParametersRegisters.ECO_TEMPERATURE_HK_3: ModbusRegister(
-        address=1551, name="ECO TEMPERATURE", unit="°C", min=5.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.ECO_TEMPERATURE_HK_3
+        address=1551, name="ECO TEMPERATURE HK3", unit="°C", min=5.0, max=30.0, data_type=2, key=WpmSystemParametersRegisters.ECO_TEMPERATURE_HK_3
     ),
     WpmSystemParametersRegisters.HEATING_CURVE_RISE_HK_3: ModbusRegister(
-        address=1552, name="HEATING CURVE RISE", unit="", min=0.0, max=3.0, data_type=7, key=WpmSystemParametersRegisters.HEATING_CURVE_RISE_HK_3
+        address=1552, name="HEATING CURVE RISE HK3", unit="", min=0.0, max=3.0, data_type=7, key=WpmSystemParametersRegisters.HEATING_CURVE_RISE_HK_3
     ),
 }
 
