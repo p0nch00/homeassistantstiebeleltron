@@ -615,7 +615,7 @@ WPM_SYSTEM_PARAMETERS_REGISTERS = {
         address=1507, name="HEATING CURVE RISE HK2", unit="", min=0.0, max=3.0, data_type=7, key=WpmSystemParametersRegisters.HEATING_CURVE_RISE_HK_2
     ),
     WpmSystemParametersRegisters.FIXED_VALUE_OPERATION: ModbusRegister(
-        address=1508, name="FIXED VALUE OPERATION HK2", unit="°C", min=20.0, max=70.0, data_type=2, key=WpmSystemParametersRegisters.FIXED_VALUE_OPERATION
+        address=1508, name="FIXED VALUE OPERATION", unit="°C", min=-2867.2, max=70.0, data_type=2, key=WpmSystemParametersRegisters.FIXED_VALUE_OPERATION
     ),
     WpmSystemParametersRegisters.DUAL_MODE_TEMP_HZG: ModbusRegister(
         address=1509, name="DUAL MODE TEMP HZG", unit="°C", min=-40.0, max=40.0, data_type=2, key=WpmSystemParametersRegisters.DUAL_MODE_TEMP_HZG
