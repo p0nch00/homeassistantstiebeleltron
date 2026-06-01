@@ -9,6 +9,15 @@
           "web_password": "Web portal password (optional)"
         },
         "description": "Configure Modbus connection. Optionally enter web portal credentials to enable additional cooling settings not available via Modbus."
+      },
+      "reconfigure": {
+        "data": {
+          "host": "Host",
+          "port": "Modbus port",
+          "web_username": "Web portal username (leave blank to disable)",
+          "web_password": "Web portal password (leave blank to disable)"
+        },
+        "description": "Update connection settings. Web portal credentials can be added or removed here without losing your dashboards."
       }
     },
     "error": {

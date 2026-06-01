@@ -150,6 +150,64 @@ class StiebelEltronConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Allow updating host/port/web credentials without removing the entry."""
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            host = _normalize_host(user_input[CONF_HOST])
+            port = int(user_input.get(CONF_PORT, DEFAULT_PORT))
+            web_username = (user_input.get(CONF_WEB_USERNAME) or "").strip()
+            web_password = (user_input.get(CONF_WEB_PASSWORD) or "").strip()
+
+            if not _is_valid_host(host):
+                errors["base"] = "invalid_host"
+            else:
+                try:
+                    await self._async_validate_input(host, port)
+                except CannotConnect:
+                    errors["base"] = "cannot_connect"
+                except Exception:
+                    _LOGGER.exception("Unexpected exception during reconfigure")
+                    errors["base"] = "unknown"
+
+                if not errors and web_username and web_password:
+                    try:
+                        await self._async_validate_web(host, web_username, web_password)
+                    except WebAuthFailed:
+                        errors["base"] = "web_auth_failed"
+                    except Exception:
+                        _LOGGER.exception("Unexpected exception during web auth")
+                        errors["base"] = "unknown"
+
+            if not errors:
+                data: dict[str, Any] = {CONF_HOST: host, CONF_PORT: port}
+                if web_username and web_password:
+                    data[CONF_WEB_USERNAME] = web_username
+                    data[CONF_WEB_PASSWORD] = web_password
+                return self.async_update_and_abort(
+                    entry,
+                    data=data,
+                )
+
+        # Pre-fill the form with the existing entry values
+        current = entry.data
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_HOST, default=current.get(CONF_HOST, "")): str,
+                    vol.Required(CONF_PORT, default=current.get(CONF_PORT, DEFAULT_PORT)): int,
+                    vol.Optional(CONF_WEB_USERNAME, default=current.get(CONF_WEB_USERNAME, "")): str,
+                    vol.Optional(CONF_WEB_PASSWORD, default=current.get(CONF_WEB_PASSWORD, "")): str,
+                }
+            ),
+            errors=errors,
+        )
+
     async def async_step_import(self, user_input: dict[str, Any]) -> ConfigFlowResult:
         """Handle YAML import."""
         host = _normalize_host(user_input[CONF_HOST])
