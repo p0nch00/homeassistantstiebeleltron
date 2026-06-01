@@ -68,14 +68,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: StiebelEltronConfigEntry
         "web_coordinator": None,
     }
 
-    web_username = entry.data.get(CONF_WEB_USERNAME, "").strip()
-    web_password = entry.data.get(CONF_WEB_PASSWORD, "").strip()
+    web_username = entry.data.get(CONF_WEB_USERNAME) or ""
+    web_password = entry.data.get(CONF_WEB_PASSWORD) or ""
+    web_username = web_username.strip()
+    web_password = web_password.strip()
+    _LOGGER.debug("Web credentials in entry.data: username present=%s", bool(web_username))
     if web_username and web_password:
+        _LOGGER.info("Setting up ISGWeb cooling integration for %s (user: %s)", host, web_username)
         web_api = WebStiebelEltronCoolingAPI(host, web_username, web_password)
         try:
             auth_ok = await web_api.connect()
+            _LOGGER.info("ISGWeb auth result for %s: %s", host, "OK" if auth_ok else "FAILED")
             if auth_ok:
                 await web_api.async_update()
+                _LOGGER.info("ISGWeb initial data fetched for %s, keys: %s", host, list(web_api._data.keys()))
 
                 async def _async_update_web() -> None:
                     try:
@@ -93,18 +99,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: StiebelEltronConfigEntry
                 await web_coordinator.async_config_entry_first_refresh()
                 entry.runtime_data["web_api"] = web_api
                 entry.runtime_data["web_coordinator"] = web_coordinator
+                _LOGGER.info("ISGWeb cooling coordinator ready for %s", host)
             else:
-                _LOGGER.warning("Web portal authentication failed for %s, web cooling entities disabled", host)
+                _LOGGER.error("ISGWeb authentication failed for %s — check username/password", host)
                 await web_api.close()
         except Exception as err:
-            _LOGGER.warning("Web portal setup failed for %s: %s", host, err)
+            _LOGGER.error("ISGWeb setup failed for %s: %s", host, err, exc_info=True)
             try:
                 await web_api.close()
             except Exception:
                 pass
+    else:
+        _LOGGER.debug("No web credentials configured, skipping ISGWeb setup")
+
+    entry.async_on_unload(entry.add_update_listener(_async_reload_on_update))
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+async def _async_reload_on_update(hass: HomeAssistant, entry: StiebelEltronConfigEntry) -> None:
+    """Reload the entry when its config data changes (e.g. after reconfigure)."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: StiebelEltronConfigEntry) -> bool:
