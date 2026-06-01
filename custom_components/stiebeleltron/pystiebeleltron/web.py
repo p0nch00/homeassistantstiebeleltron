@@ -185,7 +185,7 @@ class WebStiebelEltronCoolingAPI:
         try:
             resp = await session.post(
                 self._base_url + "/",
-                data={"username": self._username, "password": self._password},
+                data={"make": "send", "user": self._username, "pass": self._password},
                 allow_redirects=True,
                 timeout=aiohttp.ClientTimeout(total=10),
             )
