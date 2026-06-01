@@ -141,4 +141,4 @@ class WebCoolingNumber(CoordinatorEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         await self._ctx.api.write_register_value(self._reg.key, value)
-        await self._ctx.coordinator.async_request_refresh()
+        self.async_write_ha_state()

@@ -114,8 +114,8 @@ class WebCoolingSwitch(CoordinatorEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         await self._ctx.api.write_register_value(self._reg.key, 1)
-        await self._ctx.coordinator.async_request_refresh()
+        self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         await self._ctx.api.write_register_value(self._reg.key, 0)
-        await self._ctx.coordinator.async_request_refresh()
+        self.async_write_ha_state()
