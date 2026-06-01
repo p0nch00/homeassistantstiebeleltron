@@ -95,9 +95,61 @@ ALL_COOLING_PAGES: list[WebPage] = [
 ]
 
 
+@dataclass
+class WebInfoPage:
+    path: str        # e.g. "/?s=1,2"
+    name: str        # human-readable, used in entity names
+    key_prefix: str  # e.g. "wp1" — namespaces keys across heat pump pages
+
+
+INFO_PAGES: list[WebInfoPage] = [
+    WebInfoPage("/?s=1,2", "Wärmepumpe 1", "wp1"),
+    WebInfoPage("/?s=1,3", "Wärmepumpe 2", "wp2"),
+    WebInfoPage("/?s=1,4", "Wärmepumpe 3", "wp3"),
+    WebInfoPage("/?s=1,5", "Wärmepumpe 4", "wp4"),
+    WebInfoPage("/?s=1,6", "Wärmepumpe 5", "wp5"),
+    WebInfoPage("/?s=1,7", "Wärmepumpe 6", "wp6"),
+]
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _split_value_unit(raw: str) -> tuple[float | None, str]:
+    """Split an ISGWeb display value like '16,1°C' into (16.1, '°C')."""
+    m = re.match(r'^([+-]?\d[\d,.]*)\s*(.*)', raw.strip())
+    if not m:
+        return None, ""
+    num_str = m.group(1).replace(",", ".")
+    unit = m.group(2).strip()
+    # Normalise non-standard unit spellings
+    if unit == "KWh":
+        unit = "kWh"
+    try:
+        return float(num_str), unit
+    except ValueError:
+        return None, unit
+
+
+def _parse_info_page(html: str, prefix: str) -> tuple[dict[str, float | None], dict[str, str]]:
+    """Parse a read-only HTML info table into (data, units) dicts keyed by '{prefix}:{label}'."""
+    data: dict[str, float | None] = {}
+    units: dict[str, str] = {}
+    pattern = re.compile(
+        r'<td[^>]*class=["\']key["\'][^>]*>\s*([^<]+?)\s*</td>'
+        r'\s*<td[^>]*class=["\']value["\'][^>]*>\s*([^<]*?)\s*</td>',
+        re.IGNORECASE,
+    )
+    for m in pattern.finditer(html):
+        label = m.group(1).strip()
+        raw = m.group(2).strip()
+        key = f"{prefix}:{label}"
+        value, unit = _split_value_unit(raw)
+        data[key] = value
+        units[key] = unit
+    return data, units
+
 
 def _format_value(value: float, data_type: str) -> str:
     """Format a value as ISGWeb expects (comma decimal separator, European locale)."""
@@ -162,6 +214,7 @@ class WebStiebelEltronCoolingAPI:
         self._base_url = f"http://{host}"
         self._session: aiohttp.ClientSession | None = None
         self._data: dict[str, float | None] = {}
+        self._info_units: dict[str, str] = {}  # key -> unit string for info pages
         self._session_tokens: dict[str, str | None] = {}  # page path -> token
 
         # Build reverse mapping: register key -> page (for writes)
@@ -215,7 +268,7 @@ class WebStiebelEltronCoolingAPI:
             raise
 
     async def async_update(self) -> None:
-        """Fetch all cooling pages and merge the parsed values."""
+        """Fetch all cooling and info pages and merge the parsed values."""
         for page in ALL_COOLING_PAGES:
             html = await self._get_page_html(page.path)
             if html is None:
@@ -235,11 +288,36 @@ class WebStiebelEltronCoolingAPI:
             self._data.update(page_data)
             self._session_tokens[page.path] = token
 
+        for info_page in INFO_PAGES:
+            html = await self._get_page_html(info_page.path)
+            if html is None:
+                continue
+
+            if not _is_logged_in(html):
+                _LOGGER.debug("ISGWeb session expired for %s, re-authenticating", self._host)
+                if not await self.connect():
+                    _LOGGER.error("Re-authentication failed for %s", self._host)
+                    continue
+                html = await self._get_page_html(info_page.path)
+                if html is None:
+                    continue
+
+            page_data, page_units = _parse_info_page(html, info_page.key_prefix)
+            self._data.update(page_data)
+            self._info_units.update(page_units)
+
     def get_register_value(self, key: str) -> float | None:
         return self._data.get(key)
 
     def has_register_value(self, key: str) -> bool:
         return key in self._data and self._data[key] is not None
+
+    def get_info_unit(self, key: str) -> str:
+        return self._info_units.get(key, "")
+
+    def get_info_page_keys(self, prefix: str) -> list[str]:
+        """Return all data keys belonging to a given info page prefix."""
+        return [k for k in self._data if k.startswith(f"{prefix}:")]
 
     async def write_register_value(self, key: str, value: float) -> None:
         """Write a register value to the ISGWeb via save.php.

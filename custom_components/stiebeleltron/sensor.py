@@ -4,6 +4,7 @@ from typing import Any
 
 from .pystiebeleltron import RegisterType
 from .pystiebeleltron.wpm import WpmStiebelEltronAPI
+from .pystiebeleltron.web import INFO_PAGES, WebStiebelEltronCoolingAPI
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -45,6 +46,24 @@ async def async_setup_entry(
 
     async_add_entities(entities, True)
 
+    web_api: WebStiebelEltronCoolingAPI | None = entry.runtime_data.get("web_api")
+    web_coordinator = entry.runtime_data.get("web_coordinator")
+    if web_api is not None and web_coordinator is not None:
+        web_ctx = SteContext(
+            api=web_api,
+            coordinator=web_coordinator,
+            entry_id=entry.entry_id,
+            title=entry.title,
+            host=entry.data["host"],
+        )
+        web_sensors = []
+        for info_page in INFO_PAGES:
+            for key in web_api.get_info_page_keys(info_page.key_prefix):
+                label = key.split(":", 1)[1]
+                unit = web_api.get_info_unit(key)
+                web_sensors.append(WebHeatPumpSensor(web_ctx, info_page, key, label, unit))
+        async_add_entities(web_sensors, True)
+
 
 class SteRegisterSensor(CoordinatorEntity, SensorEntity):
     """Sensor for one modbus register."""
@@ -74,3 +93,22 @@ class SteRegisterSensor(CoordinatorEntity, SensorEntity):
             return self._ctx.api.get_register_value(self._reg_key)
         except Exception:
             return None
+
+
+class WebHeatPumpSensor(CoordinatorEntity, SensorEntity):
+    """Read-only sensor for one field from an ISGWeb heat pump info page."""
+
+    def __init__(self, ctx: SteContext, page, key: str, label: str, unit: str) -> None:
+        super().__init__(ctx.coordinator)
+        self._ctx = ctx
+        self._key = key
+
+        self._attr_device_info = ste_device_info(ctx)
+        self._attr_name = f"{ctx.title} {page.name} {label}"
+        self._attr_unique_id = f"{ctx.entry_id}:web:info:{key}"
+        if unit:
+            self._attr_native_unit_of_measurement = unit
+
+    @property
+    def native_value(self) -> float | None:
+        return self._ctx.api.get_register_value(self._key)
