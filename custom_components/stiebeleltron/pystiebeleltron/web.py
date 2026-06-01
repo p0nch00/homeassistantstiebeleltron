@@ -171,7 +171,10 @@ class WebStiebelEltronCoolingAPI:
 
     async def _ensure_session(self) -> aiohttp.ClientSession:
         if self._session is None or self._session.closed:
-            self._session = aiohttp.ClientSession()
+            # unsafe=True is required to accept cookies from plain IP addresses
+            self._session = aiohttp.ClientSession(
+                cookie_jar=aiohttp.CookieJar(unsafe=True)
+            )
         return self._session
 
     async def close(self) -> None:
