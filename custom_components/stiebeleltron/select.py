@@ -4,6 +4,7 @@ from typing import Any
 
 from .pystiebeleltron import RegisterType
 from .pystiebeleltron.wpm import WpmStiebelEltronAPI, WpmSystemParametersRegisters
+from .pystiebeleltron.web import ALL_COOLING_PAGES, WebSelectRegister, WebStiebelEltronCoolingAPI
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
@@ -78,6 +79,24 @@ async def async_setup_entry(
 
     async_add_entities(entities, True)
 
+    web_api: WebStiebelEltronCoolingAPI | None = entry.runtime_data.get("web_api")
+    web_coordinator = entry.runtime_data.get("web_coordinator")
+    if web_api is not None and web_coordinator is not None:
+        web_ctx = SteContext(
+            api=web_api,
+            coordinator=web_coordinator,
+            entry_id=entry.entry_id,
+            title=entry.title,
+            host=entry.data["host"],
+        )
+        web_selects = [
+            WebCoolingSelect(web_ctx, page, reg)
+            for page in ALL_COOLING_PAGES
+            for reg in page.registers
+            if isinstance(reg, WebSelectRegister)
+        ]
+        async_add_entities(web_selects, True)
+
 
 class SteRegisterSelect(CoordinatorEntity, SelectEntity):
     """Holding register enum as SelectEntity."""
@@ -134,4 +153,33 @@ class SteRegisterSelect(CoordinatorEntity, SelectEntity):
         res = self._ctx.api.write_register_value(self._reg_key, value)
         if hasattr(res, "__await__"):
             await res
+        await self._ctx.coordinator.async_request_refresh()
+
+
+class WebCoolingSelect(CoordinatorEntity, SelectEntity):
+    """ISGWeb radio-button enum field as SelectEntity."""
+
+    def __init__(self, ctx: SteContext, page, reg: WebSelectRegister) -> None:
+        super().__init__(ctx.coordinator)
+        self._ctx = ctx
+        self._reg = reg
+        # options: {value_str -> label}; reverse: {label -> int value}
+        self._options = reg.options
+        self._reverse: dict[str, int] = {label: int(val) for val, label in reg.options.items()}
+
+        self._attr_device_info = ste_device_info(ctx)
+        self._attr_name = f"{ctx.title} Web Cooling {page.name} {reg.name}"
+        self._attr_unique_id = f"{ctx.entry_id}:web:cooling:{reg.key}"
+        self._attr_options = list(reg.options.values())
+
+    @property
+    def current_option(self) -> str | None:
+        v = self._ctx.api.get_register_value(self._reg.key)
+        if v is None:
+            return None
+        return self._options.get(str(int(v)))
+
+    async def async_select_option(self, option: str) -> None:
+        value = self._reverse.get(option, 0)
+        await self._ctx.api.write_register_value(self._reg.key, float(value))
         await self._ctx.coordinator.async_request_refresh()

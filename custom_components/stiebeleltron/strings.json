@@ -1,8 +1,20 @@
 {
   "config": {
+    "step": {
+      "user": {
+        "data": {
+          "host": "Host",
+          "port": "Modbus port",
+          "web_username": "Web portal username (optional)",
+          "web_password": "Web portal password (optional)"
+        },
+        "description": "Configure Modbus connection. Optionally enter web portal credentials to enable additional cooling settings not available via Modbus."
+      }
+    },
     "error": {
       "cannot_connect": "Failed to connect.",
       "invalid_host": "Please enter a valid IP address or hostname (without http://).",
+      "web_auth_failed": "Web portal authentication failed. Check username and password.",
       "unknown": "Unexpected error."
     }
   }

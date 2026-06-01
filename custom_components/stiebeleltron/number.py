@@ -4,7 +4,7 @@ from typing import Any
 
 from .pystiebeleltron import RegisterType
 from .pystiebeleltron.wpm import WpmStiebelEltronAPI, WpmSystemParametersRegisters
-
+from .pystiebeleltron.web import ALL_COOLING_PAGES, WebNumberRegister, WebStiebelEltronCoolingAPI
 
 from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
@@ -66,6 +66,24 @@ async def async_setup_entry(
 
     async_add_entities(entities, True)
 
+    web_api: WebStiebelEltronCoolingAPI | None = entry.runtime_data.get("web_api")
+    web_coordinator = entry.runtime_data.get("web_coordinator")
+    if web_api is not None and web_coordinator is not None:
+        web_ctx = SteContext(
+            api=web_api,
+            coordinator=web_coordinator,
+            entry_id=entry.entry_id,
+            title=entry.title,
+            host=entry.data["host"],
+        )
+        web_numbers = [
+            WebCoolingNumber(web_ctx, page, reg)
+            for page in ALL_COOLING_PAGES
+            for reg in page.registers
+            if isinstance(reg, WebNumberRegister)
+        ]
+        async_add_entities(web_numbers, True)
+
 
 class SteRegisterNumber(CoordinatorEntity, NumberEntity):
     """Holding register as NumberEntity."""
@@ -97,4 +115,30 @@ class SteRegisterNumber(CoordinatorEntity, NumberEntity):
         res = self._ctx.api.write_register_value(self._reg_key, value)
         if hasattr(res, "__await__"):
             await res
+        await self._ctx.coordinator.async_request_refresh()
+
+
+class WebCoolingNumber(CoordinatorEntity, NumberEntity):
+    """Number entity for a Stiebel Eltron ISGWeb cooling numeric parameter."""
+
+    def __init__(self, ctx: SteContext, page, reg: WebNumberRegister) -> None:
+        super().__init__(ctx.coordinator)
+        self._ctx = ctx
+        self._reg = reg
+
+        self._attr_device_info = ste_device_info(ctx)
+        self._attr_name = f"{ctx.title} Web Cooling {page.name} {reg.name}"
+        self._attr_unique_id = f"{ctx.entry_id}:web:cooling:{reg.key}"
+        self._attr_native_min_value = float(reg.min)
+        self._attr_native_max_value = float(reg.max)
+        self._attr_native_step = reg.step
+        if reg.unit:
+            self._attr_native_unit_of_measurement = reg.unit
+
+    @property
+    def native_value(self) -> float | None:
+        return self._ctx.api.get_register_value(self._reg.key)
+
+    async def async_set_native_value(self, value: float) -> None:
+        await self._ctx.api.write_register_value(self._reg.key, value)
         await self._ctx.coordinator.async_request_refresh()
