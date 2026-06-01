@@ -190,7 +190,7 @@ class WebStiebelEltronCoolingAPI:
                 self._base_url + "/",
                 data={"make": "send", "user": self._username, "pass": self._password},
                 allow_redirects=True,
-                timeout=aiohttp.ClientTimeout(total=10),
+                timeout=aiohttp.ClientTimeout(total=60),
             )
             text = await resp.text()
             return resp.status == 200 and _is_logged_in(text)
@@ -203,7 +203,7 @@ class WebStiebelEltronCoolingAPI:
         try:
             resp = await session.get(
                 self._base_url + path,
-                timeout=aiohttp.ClientTimeout(total=10),
+                timeout=aiohttp.ClientTimeout(total=60),
             )
             if resp.status != 200:
                 _LOGGER.warning("HTTP %s from %s%s", resp.status, self._host, path)
@@ -266,7 +266,7 @@ class WebStiebelEltronCoolingAPI:
         resp = await session.post(
             self._base_url + page.path,
             data=post_data,
-            timeout=aiohttp.ClientTimeout(total=10),
+            timeout=aiohttp.ClientTimeout(total=60),
         )
         if resp.status != 200:
             raise ValueError(f"Write to {page.path} returned HTTP {resp.status}")

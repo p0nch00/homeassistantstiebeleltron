@@ -94,7 +94,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: StiebelEltronConfigEntry
                     _LOGGER,
                     name=f"{entry.title} Web Cooling",
                     update_method=_async_update_web,
-                    update_interval=timedelta(seconds=60),
+                    update_interval=timedelta(minutes=5),
                 )
                 await web_coordinator.async_config_entry_first_refresh()
                 entry.runtime_data["web_api"] = web_api
