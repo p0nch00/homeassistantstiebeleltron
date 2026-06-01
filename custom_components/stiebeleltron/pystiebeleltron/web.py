@@ -1,6 +1,7 @@
 """Stiebel Eltron ISGWeb HTTP client for cooling page settings."""
 from __future__ import annotations
 
+import json
 import logging
 import re
 from dataclasses import dataclass
@@ -241,37 +242,42 @@ class WebStiebelEltronCoolingAPI:
         return key in self._data and self._data[key] is not None
 
     async def write_register_value(self, key: str, value: float) -> None:
-        """Write a register value back to the appropriate ISGWeb page."""
+        """Write a register value to the ISGWeb via save.php.
+
+        save.php expects a form field 'data' whose value is a JSON array:
+        [{"name": "val11068", "value": "1"}, ...]
+        All fields from the same page are sent together.
+        """
         page = self._key_to_page.get(key)
         if page is None:
             raise ValueError(f"Unknown cooling register key: {key}")
 
-        post_data: dict[str, str] = {}
-        token = self._session_tokens.get(page.path)
-        if token:
-            post_data["sessionToken"] = token
-
+        payload = []
         for reg in page.registers:
             current = self._data.get(reg.key)
             if current is None:
                 continue
             send = value if reg.key == key else current
             if isinstance(reg, WebNumberRegister):
-                post_data[reg.key] = _format_value(send, reg.data_type)
+                str_val = _format_value(send, reg.data_type)
             else:
-                # switch or select: always integer
-                post_data[reg.key] = str(int(send))
+                str_val = str(int(send))
+            payload.append({"name": reg.key, "value": str_val})
 
         session = await self._ensure_session()
         resp = await session.post(
-            self._base_url + page.path,
-            data=post_data,
+            self._base_url + "/save.php",
+            data={"data": json.dumps(payload, separators=(",", ":"))},
             timeout=aiohttp.ClientTimeout(total=60),
         )
         if resp.status != 200:
-            raise ValueError(f"Write to {page.path} returned HTTP {resp.status}")
+            raise ValueError(f"save.php returned HTTP {resp.status}")
 
-        # Update local cache immediately
+        result = await resp.json(content_type=None)
+        if not result.get("success"):
+            raise ValueError(f"save.php error: {result.get('message', 'unknown')}")
+
+        # Update local cache so native_value reflects the change immediately
         reg = next(r for r in page.registers if r.key == key)
         if isinstance(reg, WebNumberRegister) and reg.data_type == "int":
             self._data[key] = float(int(value))
