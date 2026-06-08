@@ -4,7 +4,7 @@ from typing import Any
 
 from .pystiebeleltron import RegisterType
 from .pystiebeleltron.wpm import WpmStiebelEltronAPI, WpmSystemParametersRegisters
-from .pystiebeleltron.web import ALL_COOLING_PAGES, WebNumberRegister, WebStiebelEltronCoolingAPI
+from .pystiebeleltron.web import ALL_COOLING_PAGES, ALL_HEATING_PAGES, WebNumberRegister, WebStiebelEltronCoolingAPI
 
 from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
@@ -78,7 +78,7 @@ async def async_setup_entry(
         )
         web_numbers = [
             WebCoolingNumber(web_ctx, page, reg)
-            for page in ALL_COOLING_PAGES
+            for page in [*ALL_COOLING_PAGES, *ALL_HEATING_PAGES]
             for reg in page.registers
             if isinstance(reg, WebNumberRegister)
         ]
@@ -127,8 +127,8 @@ class WebCoolingNumber(CoordinatorEntity, NumberEntity):
         self._reg = reg
 
         self._attr_device_info = ste_device_info(ctx)
-        self._attr_name = f"{ctx.title} Web Cooling {page.name} {reg.name}"
-        self._attr_unique_id = f"{ctx.entry_id}:web:cooling:{reg.key}"
+        self._attr_name = f"{ctx.title} Web {page.category.title()} {page.name} {reg.name}"
+        self._attr_unique_id = f"{ctx.entry_id}:web:{page.category}:{reg.key}"
         self._attr_native_min_value = float(reg.min)
         self._attr_native_max_value = float(reg.max)
         self._attr_native_step = reg.step

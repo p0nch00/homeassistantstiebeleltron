@@ -47,9 +47,10 @@ class WebSelectRegister:
 
 @dataclass
 class WebPage:
-    path: str   # e.g. "/?s=4,8,1"
-    name: str   # human-readable, used in entity names
+    path: str        # e.g. "/?s=4,8,1"
+    name: str        # human-readable, used in entity names
     registers: list  # list[WebNumberRegister | WebSwitchRegister | WebSelectRegister]
+    category: str = "cooling"  # used in entity names and unique IDs ("cooling", "heating", …)
 
 
 COOLING_PAGE_GRUNDEINSTELLUNG = WebPage(
@@ -92,6 +93,21 @@ ALL_COOLING_PAGES: list[WebPage] = [
     COOLING_PAGE_GRUNDEINSTELLUNG,
     COOLING_PAGE_KUEHLKREIS2,
     COOLING_PAGE_KUEHLKREIS3,
+]
+
+HEATING_PAGE_SOMMERBETRIEB = WebPage(
+    path="/?s=4,2,4",
+    name="Sommerbetrieb",
+    category="heating",
+    registers=[
+        WebSwitchRegister("SOMMERBETRIEB",    "val103"),
+        WebNumberRegister("AUSSENTEMPERATUR", "val105", "°C", 10, 30, 0.1,  "float"),
+        WebNumberRegister("GEBÄUDEDÄMPFUNG",  "val104", "",   0,  3,  1.0,  "int"),
+    ],
+)
+
+ALL_HEATING_PAGES: list[WebPage] = [
+    HEATING_PAGE_SOMMERBETRIEB,
 ]
 
 
@@ -219,7 +235,7 @@ class WebStiebelEltronCoolingAPI:
 
         # Build reverse mapping: register key -> page (for writes)
         self._key_to_page: dict[str, WebPage] = {}
-        for page in ALL_COOLING_PAGES:
+        for page in [*ALL_COOLING_PAGES, *ALL_HEATING_PAGES]:
             for reg in page.registers:
                 self._key_to_page[reg.key] = page
 
@@ -268,8 +284,8 @@ class WebStiebelEltronCoolingAPI:
             raise
 
     async def async_update(self) -> None:
-        """Fetch all cooling and info pages and merge the parsed values."""
-        for page in ALL_COOLING_PAGES:
+        """Fetch all editable and info pages and merge the parsed values."""
+        for page in [*ALL_COOLING_PAGES, *ALL_HEATING_PAGES]:
             html = await self._get_page_html(page.path)
             if html is None:
                 continue

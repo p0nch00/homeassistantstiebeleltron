@@ -4,7 +4,7 @@ from typing import Any
 
 from .pystiebeleltron import RegisterType
 from .pystiebeleltron.wpm import WpmStiebelEltronAPI, WpmSystemParametersRegisters
-from .pystiebeleltron.web import ALL_COOLING_PAGES, WebSelectRegister, WebStiebelEltronCoolingAPI
+from .pystiebeleltron.web import ALL_COOLING_PAGES, ALL_HEATING_PAGES, WebSelectRegister, WebStiebelEltronCoolingAPI
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
@@ -91,7 +91,7 @@ async def async_setup_entry(
         )
         web_selects = [
             WebCoolingSelect(web_ctx, page, reg)
-            for page in ALL_COOLING_PAGES
+            for page in [*ALL_COOLING_PAGES, *ALL_HEATING_PAGES]
             for reg in page.registers
             if isinstance(reg, WebSelectRegister)
         ]
@@ -168,8 +168,8 @@ class WebCoolingSelect(CoordinatorEntity, SelectEntity):
         self._reverse: dict[str, int] = {label: int(val) for val, label in reg.options.items()}
 
         self._attr_device_info = ste_device_info(ctx)
-        self._attr_name = f"{ctx.title} Web Cooling {page.name} {reg.name}"
-        self._attr_unique_id = f"{ctx.entry_id}:web:cooling:{reg.key}"
+        self._attr_name = f"{ctx.title} Web {page.category.title()} {page.name} {reg.name}"
+        self._attr_unique_id = f"{ctx.entry_id}:web:{page.category}:{reg.key}"
         self._attr_options = list(reg.options.values())
 
     @property
