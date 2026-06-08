@@ -119,6 +119,7 @@ class WebInfoPage:
 
 
 INFO_PAGES: list[WebInfoPage] = [
+    WebInfoPage("/?s=1,0", "Anlage",       "anlage"),
     WebInfoPage("/?s=1,2", "Wärmepumpe 1", "wp1"),
     WebInfoPage("/?s=1,3", "Wärmepumpe 2", "wp2"),
     WebInfoPage("/?s=1,4", "Wärmepumpe 3", "wp3"),
@@ -149,21 +150,32 @@ def _split_value_unit(raw: str) -> tuple[float | None, str]:
 
 
 def _parse_info_page(html: str, prefix: str) -> tuple[dict[str, float | None], dict[str, str]]:
-    """Parse a read-only HTML info table into (data, units) dicts keyed by '{prefix}:{label}'."""
+    """Parse a read-only HTML info table into (data, units) dicts.
+
+    Keys are '{prefix}:{section}:{label}' where section comes from the nearest
+    preceding <th> header — this avoids collisions when the same label (e.g.
+    ISTTEMPERATUR) appears in multiple table sections on the same page.
+    """
     data: dict[str, float | None] = {}
     units: dict[str, str] = {}
-    pattern = re.compile(
-        r'<td[^>]*class=["\']key["\'][^>]*>\s*([^<]+?)\s*</td>'
+    current_section = ""
+    # Match either a section header (<th>) or a key/value row pair, in order
+    combined = re.compile(
+        r'<th[^>]*>\s*([^<]+?)\s*</th>'
+        r'|<td[^>]*class=["\']key["\'][^>]*>\s*([^<]+?)\s*</td>'
         r'\s*<td[^>]*class=["\']value["\'][^>]*>\s*([^<]*?)\s*</td>',
         re.IGNORECASE,
     )
-    for m in pattern.finditer(html):
-        label = m.group(1).strip()
-        raw = m.group(2).strip()
-        key = f"{prefix}:{label}"
-        value, unit = _split_value_unit(raw)
-        data[key] = value
-        units[key] = unit
+    for m in combined.finditer(html):
+        if m.group(1) is not None:
+            current_section = m.group(1).strip()
+        else:
+            label = m.group(2).strip()
+            raw = m.group(3).strip()
+            key = f"{prefix}:{current_section}:{label}" if current_section else f"{prefix}:{label}"
+            value, unit = _split_value_unit(raw)
+            data[key] = value
+            units[key] = unit
     return data, units
 
 

@@ -59,7 +59,8 @@ async def async_setup_entry(
         web_sensors = []
         for info_page in INFO_PAGES:
             for key in web_api.get_info_page_keys(info_page.key_prefix):
-                label = key.split(":", 1)[1]
+                # key format: "{prefix}:{section}:{label}" — drop prefix, join rest with space
+                label = " ".join(key.split(":")[1:])
                 unit = web_api.get_info_unit(key)
                 web_sensors.append(WebHeatPumpSensor(web_ctx, info_page, key, label, unit))
         async_add_entities(web_sensors, True)
